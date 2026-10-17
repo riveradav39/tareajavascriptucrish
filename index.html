@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrador de Tareas - UCRISH</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen text-gray-800">
+
+    <!-- Encabezado -->
+    <header class="bg-blue-900 text-white shadow-lg py-6 px-4">
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold">Desarrollo de Aplicaciones Web 1</h1>
+                <p class="text-blue-200 text-sm">Proyecto: Manipulación del DOM, Eventos y LocalStorage</p>
+            </div>
+            <div class="text-right text-xs bg-blue-800 p-3 rounded-lg border border-blue-700">
+                <p><span class="font-semibold">Estudiante:</span> Gerson David Rivera Miranda</p>
+                <p><span class="font-semibold">Cuenta:</span> 12005010091</p>
+                <p><span class="font-semibold">Catedrático:</span> Ing. Luis Gonzales</p>
+                <p><span class="font-semibold">Universidad:</span> UCRISH</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="max-w-4xl mx-auto p-4 my-6">
+
+        <!-- Formulario de Agregar Tarea -->
+        <section class="bg-white p-6 rounded-xl shadow-md mb-8">
+            <h2 class="text-xl font-bold mb-4 text-gray-700 flex items-center gap-2">
+                <i class="fas fa-plus-circle text-blue-600"></i> Registrar Nueva Tarea
+            </h2>
+            <form id="formularioTarea" class="flex flex-col md:flex-row gap-4">
+                <input 
+                    type="text" 
+                    id="inputTarea" 
+                    placeholder="Escribe el nombre de la tarea académica..." 
+                    class="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                >
+                <button 
+                    type="submit" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                    <i class="fas fa-save"></i> Guardar Tarea
+                </button>
+            </form>
+        </section>
+
+        <!-- Lista de Tareas -->
+        <section class="bg-white p-6 rounded-xl shadow-md mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-700 flex items-center gap-2">
+                    <i class="fas fa-tasks text-blue-600"></i> Mis Tareas
+                </h2>
+                <button 
+                    id="btnLimpiarTodo" 
+                    class="text-sm bg-red-100 text-red-600 hover:bg-red-200 px-3 py-1.5 rounded-md font-medium transition"
+                >
+                    <i class="fas fa-trash-alt"></i> Borrar Todo
+                </button>
+            </div>
+
+            <!-- Lista Dinámica del DOM -->
+            <ul id="listaTareas" class="space-y-3">
+                <!-- Se llena dinámicamente con JavaScript -->
+            </ul>
+
+            <!-- Mensaje Vacio -->
+            <p id="mensajeVacio" class="text-center text-gray-400 py-6">
+                No hay tareas pendientes almacenadas en LocalStorage.
+            </p>
+        </section>
+
+        <!-- Explicación Técnica para la Tarea Academicá -->
+        <section class="bg-blue-50 border border-blue-200 p-6 rounded-xl text-sm">
+            <h3 class="font-bold text-blue-900 mb-2 text-base">
+                <i class="fas fa-code text-blue-600"></i> Explicación Técnica de la Aplicación:
+            </h3>
+            <ul class="list-disc list-inside space-y-1 text-blue-800">
+                <li><b>Manipulación del DOM:</b> Selección de nodos mediante <code>document.getElementById()</code> y creación dinámica con <code>document.createElement()</code>.</li>
+                <li><b>Eventos:</b> Captura de interacciones usando <code>addEventListener('submit')</code> y <code>addEventListener('click')</code>.</li>
+                <li><b>Persistencia de Datos:</b> Los datos no se pierden al recargar la página gracias a <code>localStorage.setItem()</code> y <code>localStorage.getItem()</code> serializados con <code>JSON.stringify()</code> y <code>JSON.parse()</code>.</li>
+            </ul>
+        </section>
+
+    </main>
+
+    <!-- Código JavaScript -->
+    <script>
+        // 1. Selección de elementos del DOM
+        const formularioTarea = document.getElementById('formularioTarea');
+        const inputTarea = document.getElementById('inputTarea');
+        const listaTareas = document.getElementById('listaTareas');
+        const mensajeVacio = document.getElementById('mensajeVacio');
+        const btnLimpiarTodo = document.getElementById('btnLimpiarTodo');
+
+        // 2. Obtener tareas guardadas en LocalStorage o iniciar arreglo vacío
+        let tareas = JSON.parse(localStorage.getItem('tareasUCRISH')) || [];
+
+        // 3. Función para renderizar/dibujar las tareas en el DOM
+        function renderizarTareas() {
+            listaTareas.innerHTML = '';
+
+            if (tareas.length === 0) {
+                mensajeVacio.style.display = 'block';
+                return;
+            } else {
+                mensajeVacio.style.display = 'none';
+            }
+
+            tareas.forEach((tarea, index) => {
+                const li = document.createElement('li');
+                li.className = `flex justify-between items-center p-4 border rounded-lg transition-all ${
+                    tarea.completada ? 'bg-gray-100 border-gray-200 line-through text-gray-400' : 'bg-white border-gray-200 shadow-sm'
+                }`;
+
+                li.innerHTML = `
+                    <span class="flex-1 cursor-pointer" onclick="alternarEstado(${index})">
+                        <i class="${tarea.completada ? 'fas fa-check-circle text-green-500' : 'far fa-circle text-gray-400'} mr-2"></i>
+                        ${tarea.texto}
+                    </span>
+                    <button onclick="eliminarTarea(${index})" class="text-red-500 hover:text-red-700 ml-4 p-1">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+
+                listaTareas.appendChild(li);
+            });
+        }
+
+        // 4. Evento para Agregar Tarea
+        formularioTarea.addEventListener('submit', function(e) {
+            e.preventDefault(); // Previene recargar la página
+            
+            const texto = inputTarea.value.trim();
+            if (texto === '') return;
+
+            tareas.push({
+                texto: texto,
+                completada: false
+            });
+
+            guardarYRenderizar();
+            inputTarea.value = '';
+        });
+
+        // 5. Función para cambiar estado completado/pendiente
+        window.alternarEstado = function(index) {
+            tareas[index].completada = !tareas[index].completada;
+            guardarYRenderizar();
+        };
+
+        // 6. Función para eliminar una tarea individual
+        window.eliminarTarea = function(index) {
+            tareas.splice(index, 1);
+            guardarYRenderizar();
+        };
+
+        // 7. Evento para Limpiar Todo LocalStorage
+        btnLimpiarTodo.addEventListener('click', function() {
+            if (confirm('¿Estás seguro de que deseas borrar todas las tareas guardadas?')) {
+                tareas = [];
+                guardarYRenderizar();
+            }
+        });
+
+        // 8. Función auxiliar para guardar en LocalStorage e ir al DOM
+        function guardarYRenderizar() {
+            localStorage.setItem('tareasUCRISH', JSON.stringify(tareas));
+            renderizarTareas();
+        }
+
+        // Carga inicial al abrir la página
+        renderizarTareas();
+    </script>
+</body>
+</html>
